@@ -3,4 +3,4 @@ Reinforcement learning agent for a roguelike game. This project is being done fo
 
 Group members:
 Elijah Clare
-Deshawn Williams
+Dashawn Williams
