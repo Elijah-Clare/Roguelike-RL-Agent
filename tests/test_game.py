@@ -6,6 +6,12 @@ from roguelike.dungeon import WALL, distances_from
 from roguelike.game import DOWN, LEFT, MOVES, RIGHT, UP, WAIT, Game
 
 
+def no_enemies(game):
+    """remove the enemies so only the movement rules are tested"""
+    game.enemies = []
+    return game
+
+
 def path_to_stairs(game):
     """actions that walk the player to the stairs on the current floor"""
     dist = distances_from(game.grid, game.dungeon.stairs)
@@ -22,7 +28,7 @@ def path_to_stairs(game):
 
 def test_walls_block_movement():
     """walking into a wall leaves the player where they were"""
-    game = Game(seed=0)
+    game = no_enemies(Game(seed=0))
     while game.grid[game.pos[0] - 1, game.pos[1]] != WALL:  # walk up to a wall
         game.step(UP)
     start = game.pos
@@ -33,7 +39,7 @@ def test_walls_block_movement():
 
 def test_new_tile_only_counted_once():
     """going back and forth only counts each tile as new once"""
-    game = Game(seed=3)
+    game = no_enemies(Game(seed=3))
     seen = []
     for action in (RIGHT, LEFT, RIGHT, LEFT, DOWN, UP, DOWN, UP):
         events = game.step(action)
@@ -44,7 +50,7 @@ def test_new_tile_only_counted_once():
 
 def test_reaching_stairs_wins_single_floor():
     """with one floor, reaching the stairs wins the game"""
-    game = Game(seed=5)
+    game = no_enemies(Game(seed=5))
     for action in path_to_stairs(game):
         events = game.step(action)
     assert events.reached_stairs and events.won and game.done
@@ -55,6 +61,7 @@ def test_multiple_floors():
     game = Game(seed=11, num_floors=3)
     for floor in (1, 2, 3):
         assert game.floor == floor
+        no_enemies(game)
         for action in path_to_stairs(game):
             game.step(action)
     assert game.won
@@ -62,7 +69,7 @@ def test_multiple_floors():
 
 def test_turn_limit_times_out():
     """the run ends when the turn limit is hit"""
-    game = Game(seed=1, turns_per_floor=10)
+    game = no_enemies(Game(seed=1, turns_per_floor=10))
     for _ in range(10):
         events = game.step(WAIT)
     assert events.timed_out and game.done and not game.won

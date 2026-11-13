@@ -86,6 +86,10 @@ class RoguelikeEnv(gym.Env):
         for row, col in game.visited:
             if top <= row < bottom and left <= col < right:
                 view[VISITED_CH, row - view_top, col - view_left] = 1.0
+        for enemy in game.enemies:
+            row, col = enemy.pos
+            if top <= row < bottom and left <= col < right:
+                view[ENEMY_CH, row - view_top, col - view_left] = enemy.kind.obs_value
 
         stats = np.array([game.hp / game.max_hp,
                           game.floor / game.num_floors,
