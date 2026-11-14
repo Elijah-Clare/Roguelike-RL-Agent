@@ -8,7 +8,7 @@ import numpy as np
 from gymnasium import spaces
 
 from .dungeon import STAIRS, WALL
-from .game import NUM_ACTIONS, Game
+from .game import MAX_POTIONS, NUM_ACTIONS, Game
 
 VIEW_SIZE = 11
 
@@ -40,7 +40,7 @@ class RoguelikeEnv(gym.Env):
         self.action_space = spaces.Discrete(NUM_ACTIONS)
         self.observation_space = spaces.Dict({
             "view": spaces.Box(0.0, 1.0, (NUM_CHANNELS, VIEW_SIZE, VIEW_SIZE), np.float32),
-            "stats": spaces.Box(0.0, 1.0, (3,), np.float32),
+            "stats": spaces.Box(0.0, 1.0, (4,), np.float32),
         })
 
     def reset(self, seed=None, options=None):
@@ -67,7 +67,7 @@ class RoguelikeEnv(gym.Env):
         return self.observe(), reward, terminated, truncated, info
 
     def observe(self):
-        """the 11x11 view around the player plus hp, floor, and turns used"""
+        """the 11x11 view around the player plus hp, floor, turns used, and potions carried"""
         game = self.game
         half = VIEW_SIZE // 2
         view = np.zeros((NUM_CHANNELS, VIEW_SIZE, VIEW_SIZE), np.float32)
@@ -90,10 +90,14 @@ class RoguelikeEnv(gym.Env):
             row, col = enemy.pos
             if top <= row < bottom and left <= col < right:
                 view[ENEMY_CH, row - view_top, col - view_left] = enemy.kind.obs_value
+        for row, col in game.potion_tiles:
+            if top <= row < bottom and left <= col < right:
+                view[POTION_CH, row - view_top, col - view_left] = 1.0
 
         stats = np.array([game.hp / game.max_hp,
                           game.floor / game.num_floors,
-                          game.turns_on_floor / game.turns_per_floor], np.float32)
+                          game.turns_on_floor / game.turns_per_floor,
+                          game.potions / MAX_POTIONS], np.float32)
         return {"view": view, "stats": stats}
 
     def render(self):

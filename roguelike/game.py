@@ -12,6 +12,8 @@ from .enemies import ENEMY_TYPES, Enemy, enemy_turn
 
 PLAYER_DAMAGE = 3        # hp an enemy loses when the player bumps it
 MIN_ENEMY_DISTANCE = 4   # enemies spawn at least this many steps from the start
+MAX_POTIONS = 3          # most potions the player can carry
+POTION_HEAL = 5          # hp restored by drinking one
 
 # action ids
 UP, DOWN, LEFT, RIGHT, WAIT, DRINK = range(6)
@@ -30,6 +32,9 @@ class Events:
     attacked: bool = False        # bumped into an enemy
     killed_enemy: bool = False
     damage_taken: int = 0         # hp lost to enemies this turn
+    picked_potion: bool = False
+    drank_potion: bool = False
+    healed: int = 0               # hp actually restored (0 if already at full hp)
     reached_stairs: bool = False
     won: bool = False             # cleared the last floor
     died: bool = False
@@ -54,6 +59,7 @@ class Game:
         self.turns_per_floor = turns_per_floor
         self.max_hp = max_hp
         self.hp = max_hp
+        self.potions = 0  # potions carried, kept between floors
         self.floor = 1
         self.total_turns = 0
         self.won = False
@@ -68,6 +74,16 @@ class Game:
         self.visited = {self.pos}  # tiles the player has stood on this floor
         self.turns_on_floor = 0
         self.enemies = self.spawn_enemies()
+        self.potion_tiles = self.spawn_potions()
+
+    def spawn_potions(self):
+        """place 1 or 2 potions on open floor tiles"""
+        taken = {self.pos} | {enemy.pos for enemy in self.enemies}
+        tiles = [(int(row), int(col)) for row, col in np.argwhere(self.grid == FLOOR)]
+        tiles = [tile for tile in tiles if tile not in taken]
+        count = min(int(self.rng.integers(1, 3)), len(tiles))
+        picks = self.rng.choice(len(tiles), size=count, replace=False)
+        return {tiles[int(index)] for index in picks}
 
     def spawn_enemies(self):
         """place 1 to 3 enemies far enough from the start"""
@@ -123,7 +139,16 @@ class Game:
                 if target not in self.visited:
                     self.visited.add(target)
                     events.new_tile = True
-        # WAIT does nothing. DRINK does nothing until potions are added
+                if target in self.potion_tiles and self.potions < MAX_POTIONS:
+                    self.potion_tiles.remove(target)
+                    self.potions += 1
+                    events.picked_potion = True
+        elif action == DRINK and self.potions > 0:
+            self.potions -= 1
+            events.drank_potion = True
+            events.healed = min(POTION_HEAL, self.max_hp - self.hp)
+            self.hp += events.healed
+        # WAIT, or DRINK with no potions, does nothing
 
         self.total_turns += 1
         self.turns_on_floor += 1
@@ -152,12 +177,14 @@ class Game:
         return events
 
     def render_text(self):
-        """the map as text (# wall, . floor, > stairs, @ player, r/g enemies) plus a status line"""
+        """the map as text (# wall, . floor, > stairs, ! potion, @ player, r/g enemies) plus a status line"""
         chars = [["#.>"[tile] for tile in tiles] for tiles in self.grid]
+        for row, col in self.potion_tiles:
+            chars[row][col] = "!"
         for enemy in self.enemies:
             chars[enemy.pos[0]][enemy.pos[1]] = enemy.kind.symbol
         chars[self.pos[0]][self.pos[1]] = "@"
         rows = ["".join(line) for line in chars]
         status = (f"Floor {self.floor}/{self.num_floors}  HP {self.hp}/{self.max_hp}  "
-                  f"Turn {self.turns_on_floor}/{self.turns_per_floor}")
+                  f"Potions {self.potions}  Turn {self.turns_on_floor}/{self.turns_per_floor}")
         return "\n".join(rows + [status])
