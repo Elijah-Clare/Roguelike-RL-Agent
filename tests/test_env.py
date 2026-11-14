@@ -40,6 +40,30 @@ def test_view_matches_map():
     assert obs["view"][STAIRS_CH].sum() <= 1
 
 
+def enemy_moves(env, seed, run, turns=30):
+    """enemy positions each turn while the player waits"""
+    env.reset(seed=seed, options={"run": run})
+    moves = []
+    for _ in range(turns):
+        _, _, terminated, truncated, _ = env.step(WAIT)
+        moves.append(tuple(enemy.pos for enemy in env.game.enemies))
+        if terminated or truncated:
+            break
+    return moves
+
+
+def test_run_option_changes_enemy_moves():
+    """same map and run repeats exactly, a different run moves enemies differently"""
+    env = RoguelikeEnv()
+    differs = 0
+    for seed in range(10):
+        assert enemy_moves(env, seed, run=0) == enemy_moves(env, seed, run=0)
+        differs += enemy_moves(env, seed, run=0) != enemy_moves(env, seed, run=1)
+        _, info = env.reset(seed=seed, options={"run": 1})
+        assert info["map_seed"] == seed
+    assert differs >= 8
+
+
 def test_seed_pool_only_uses_pool():
     """without a seed, reset only picks maps from the pool"""
     env = RoguelikeEnv(seed_pool=[5, 6, 7])

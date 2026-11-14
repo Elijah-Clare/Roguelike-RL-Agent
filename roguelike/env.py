@@ -44,7 +44,8 @@ class RoguelikeEnv(gym.Env):
         })
 
     def reset(self, seed=None, options=None):
-        """start a new run. reset(seed=s) always gives map s, otherwise one is drawn from seed_pool"""
+        """start a new run. reset(seed=s) always gives map s, otherwise one is drawn from seed_pool.
+        options={"run": r} gives each run on the same map its own enemy moves"""
         super().reset(seed=seed)
         if seed is not None:
             map_seed = seed
@@ -52,8 +53,15 @@ class RoguelikeEnv(gym.Env):
             map_seed = self.seed_pool[int(self.np_random.integers(len(self.seed_pool)))]
         else:
             map_seed = int(self.np_random.integers(2**31))
-        self.game = Game(map_seed, num_floors=self.num_floors, turns_per_floor=self.turns_per_floor,
-                         **self.game_kwargs)
+
+        run = (options or {}).get("run")
+        if run is not None:
+            behavior_seed = [map_seed, run]
+        else:
+            behavior_seed = int(self.np_random.integers(2**31))
+
+        self.game = Game(map_seed, behavior_seed=behavior_seed, num_floors=self.num_floors,
+                         turns_per_floor=self.turns_per_floor, **self.game_kwargs)
         return self.observe(), {"map_seed": map_seed}
 
     def step(self, action):
