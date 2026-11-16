@@ -13,6 +13,13 @@ pip install -r requirements.txt
 pytest
 ```
 
+## Playing the game
+```
+python -m roguelike.play
+```
+Arrow keys or WASD move (and attack), space waits, Q drinks a potion, R starts a new run, Esc quits.
+Human play only uses training maps. Seeds are split in `roguelike/seeds.py`: training maps are 0 to 9999, test maps start at 1,000,000.
+
 ## Game rules
 - 12x12 dungeon of rooms and corridors. Reach the stairs (`>`) to clear the floor.
 - Player has 10 HP. Moving into an enemy attacks it for 3 damage.
