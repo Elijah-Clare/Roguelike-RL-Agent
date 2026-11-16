@@ -18,6 +18,7 @@ pytest
 python -m roguelike.play
 ```
 Arrow keys or WASD move (and attack), space waits, Q drinks a potion, R starts a new run, Esc quits.
+The window uses the 16x16 pixel art in `assets/` (floor, wall, stairs, player, rat, goblin, potion, heart). If a file is missing it draws a plain shape instead. The art only changes how the window looks. The agent never sees it.
 To record runs for the imitation baseline:
 ```
 python -m roguelike.play --record --name dashawn
