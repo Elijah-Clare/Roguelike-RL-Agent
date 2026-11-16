@@ -1,13 +1,14 @@
 # PROGRAMMER: Dashawn Williams
 # DUE DATE: Monday, 11/30/26
 # Pygame window so a person can play the game with the keyboard.
-# Usage: python -m roguelike.play [--seed N] [--floors N]
+# Usage: python -m roguelike.play [--seed N] [--floors N] [--record --name NAME]
 
 import argparse
 
 import numpy as np
 import pygame
 
+from .demos import Recorder
 from .dungeon import STAIRS, WALL
 from .env import RoguelikeEnv
 from .game import DOWN, DRINK, LEFT, RIGHT, UP, WAIT
@@ -73,7 +74,7 @@ def draw_letter(screen, font, letter, color, rect):
     screen.blit(text, text.get_rect(center=rect.center))
 
 
-def draw(screen, fonts, game, message):
+def draw(screen, fonts, game, message, recording=None):
     """draw the map, the player, enemies, potions, and the status text"""
     big, small = fonts
     screen.fill(COLORS["background"])
@@ -110,6 +111,8 @@ def draw(screen, fonts, game, message):
     top = game.height * TILE + 6
     status = (f"Floor {game.floor}/{game.num_floors}   HP {game.hp}/{game.max_hp}   "
               f"Potions {game.potions}   Turn {game.turns_on_floor}/{game.turns_per_floor}")
+    if recording:
+        status += f"   {recording}"
     for line, text in enumerate((status, message or "", HELP)):
         screen.blit(small.render(text, True, COLORS["text"]), (8, top + line * 22))
 
@@ -133,14 +136,24 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, help="play one specific training map")
     parser.add_argument("--floors", type=int, default=1)
+    parser.add_argument("--record", action="store_true", help="save each finished run to demos/")
+    parser.add_argument("--name", default="player", help="your name, used in the saved file names")
     args = parser.parse_args()
     if args.seed is not None and args.seed not in TRAIN_SEEDS:
         parser.error("seed must be a training seed (0 to 9999)")
 
     rng = np.random.default_rng()
     env = RoguelikeEnv(num_floors=args.floors)
-    env.reset(seed=args.seed if args.seed is not None else pick_seed(rng),
-              options={"run": int(rng.integers(1000))})
+    saved = 0  # runs recorded this session
+
+    def new_run(seed):
+        """reset the game and start a fresh recording if recording"""
+        run = int(rng.integers(1000))
+        obs, info = env.reset(seed=seed, options={"run": run})
+        recorder = Recorder(args.name, info["map_seed"], run, args.floors) if args.record else None
+        return obs, recorder
+
+    obs, recorder = new_run(args.seed if args.seed is not None else pick_seed(rng))
     screen, fonts = make_window(env.game)
     message = "New run."
     clock = pygame.time.Clock()
@@ -151,12 +164,20 @@ def main():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                env.reset(seed=pick_seed(rng), options={"run": int(rng.integers(1000))})
+                obs, recorder = new_run(pick_seed(rng))  # an unfinished run is not saved
                 message = "New run."
             elif event.type == pygame.KEYDOWN and event.key in KEYS and not env.game.done:
-                _, _, _, _, info = env.step(KEYS[event.key])
+                action = KEYS[event.key]
+                if recorder:
+                    recorder.add(obs, action)
+                obs, _, _, _, info = env.step(action)
                 message = describe(info["events"])
-        draw(screen, fonts, env.game, message)
+                if recorder and env.game.done:
+                    recorder.save(won=env.game.won, died=env.game.died)
+                    saved += 1
+                    message += f" Saved run {saved}."
+        recording = f"REC ({saved} saved)" if args.record else None
+        draw(screen, fonts, env.game, message, recording)
         pygame.display.flip()
         clock.tick(30)
     pygame.quit()

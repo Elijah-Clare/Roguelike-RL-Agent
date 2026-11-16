@@ -18,6 +18,12 @@ pytest
 python -m roguelike.play
 ```
 Arrow keys or WASD move (and attack), space waits, Q drinks a potion, R starts a new run, Esc quits.
+To record runs for the imitation baseline:
+```
+python -m roguelike.play --record --name dashawn
+```
+Each finished run (win, death, or timeout) is saved to `demos/` as an `.npz` file. Pressing R before a run ends skips saving it. `roguelike.demos.load_demos()` loads every recorded step as `view`, `stats`, and `actions` arrays.
+
 Human play only uses training maps. Seeds are split in `roguelike/seeds.py`: training maps are 0 to 9999, test maps start at 1,000,000.
 
 ## Game rules
