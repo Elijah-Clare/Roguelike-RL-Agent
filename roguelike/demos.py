@@ -9,6 +9,8 @@ from datetime import datetime
 
 import numpy as np
 
+from .game import MOVES, NUM_ACTIONS
+
 DEMO_DIR = "demos"
 
 
@@ -58,3 +60,36 @@ def load_demos(folder=DEMO_DIR, only_won=False):
         raise FileNotFoundError(f"no recorded runs in {folder}")
     return {"view": np.concatenate(views), "stats": np.concatenate(stats),
             "actions": np.concatenate(actions), "runs": runs}
+
+
+def transform_view(view, rotations, flip):
+    """turn the view a quarter turn rotations times, then mirror it left to right if flip"""
+    out = np.rot90(view, k=rotations, axes=(-2, -1))
+    if flip:
+        out = np.flip(out, axis=-1)
+    return np.ascontiguousarray(out)
+
+
+def transform_action(action, rotations, flip):
+    """the move that matches action after the same turn and mirror (wait and drink stay the same)"""
+    if action not in MOVES:
+        return action
+    d_row, d_col = MOVES[action]
+    marker = np.zeros((3, 3))
+    marker[1 + d_row, 1 + d_col] = 1  # mark the tile the move goes to
+    row, col = np.argwhere(transform_view(marker, rotations, flip))[0]
+    new_move = (int(row) - 1, int(col) - 1)
+    return next(other for other, move in MOVES.items() if move == new_move)
+
+
+def augment(demos):
+    """all 8 turns and mirror images of the recorded steps (8 times the data)"""
+    views, stats, actions = [], [], []
+    for rotations in range(4):
+        for flip in (False, True):
+            table = np.array([transform_action(a, rotations, flip) for a in range(NUM_ACTIONS)])
+            views.append(transform_view(demos["view"], rotations, flip))
+            stats.append(demos["stats"])
+            actions.append(table[demos["actions"]])
+    return {"view": np.concatenate(views), "stats": np.concatenate(stats),
+            "actions": np.concatenate(actions), "runs": demos["runs"]}
