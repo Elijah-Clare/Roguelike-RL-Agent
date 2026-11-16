@@ -24,7 +24,7 @@ def evaluate(agent, num_seeds=100, runs_per_seed=5, reward_fn=None):
     for seed in range(TEST_SEED_START, TEST_SEED_START + num_seeds):
         for run in range(runs_per_seed):
             # Reset the game world and the agent for a fresh start
-            obs, _ = env.reset(seed=seed)
+            obs, _ = env.reset(seed=seed, options={"run": run})
             agent.reset()
             
             total_reward, new_tiles, done = 0.0, 0, False
