@@ -8,8 +8,7 @@ import numpy as np
 
 from agents.random_agent import RandomAgent
 from roguelike.env import RoguelikeEnv
-
-TEST_SEED_START = 1000000
+from roguelike.seeds import TEST_SEED_START
 
 def evaluate(agent, num_seeds=100, runs_per_seed=5, reward_fn=None):
     """
