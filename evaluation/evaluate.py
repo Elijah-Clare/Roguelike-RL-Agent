@@ -7,6 +7,8 @@ import os
 import numpy as np
 
 from agents.random_agent import RandomAgent
+from agents.scripted_bot import ScriptedBot
+from agents.ppo_agent import PPOAgent
 from roguelike.env import RoguelikeEnv
 from roguelike.seeds import TEST_SEED_START
 
@@ -61,14 +63,21 @@ def save_csv(results, path):
         writer.writeheader()
         writer.writerows(results)
         
-def make_agent(name, seed):
+def make_agent(name: str, seed: int = 0, model_path: str | None = None):
     """
     Creates and returns the right type of agent based on a name (like 'random'),
     giving it a starting random seed if needed.
     """
     if name == "random":
         return RandomAgent(seed=seed)
+    if name == "scripted":
+        return ScriptedBot(seed=seed)
+    if name == "ppo":
+        if not model_path:
+            raise ValueError("--model <path> is required when --agent ppo")
+        return PPOAgent(model_path)
     raise ValueError(f"Unknown agent: {name}")
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -76,10 +85,12 @@ if __name__ == "__main__":
     parser.add_argument("--seeds", type=int, default=100)
     parser.add_argument("--runs", type=int, default=5)
     parser.add_argument("--out", default="results")
+    parser.add_argument("--model", default=None, help="Path to .zip model for ppo agent")
     args = parser.parse_args()
 
     # Run the evaluation games and save the data to a file
-    results = evaluate(make_agent(args.agent, seed=0), args.seeds, args.runs)
+    agent = make_agent(args.agent, seed=0, model_path=args.model)
+    results = evaluate(agent, args.seeds, args.runs)
     save_csv(results, f"{args.out}/{args.agent}_runs.csv")
     
     # Calculate the averages and print them out to the screen
