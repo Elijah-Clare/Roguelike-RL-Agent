@@ -33,7 +33,7 @@ python -m roguelike.replay --demo demos/FILE.npz
 python -m roguelike.replay --model checkpoints/ppo_step_100000.zip --seed 1000003 --run 0
 python -m roguelike.replay --agent random --seed 1000003 --run 0 --gif random.gif --no-window
 ```
-Plays a recorded human run, a saved PPO model, or the random agent on one map in the game window. `--gif FILE` also saves it as a GIF, and `--no-window` skips the window. Useful for the mistake analysis: replay an early checkpoint and a late one on the same seed and run.
+Plays a recorded human run, a saved PPO model, or the random agent on one map in the game window. `--gif FILE` also saves it as a GIF, and `--no-window` skips the window. For PPO models, yellow arrows show how likely each move is (thicker means more likely), and a box in the corner shows the chance of waiting or drinking. Add `--no-thinking` to hide them. Useful for the mistake analysis: replay an early checkpoint and a late one on the same seed and run.
 
 ## Game rules
 - 12x12 dungeon of rooms and corridors. Reach the stairs (`>`) to clear the floor.
