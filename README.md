@@ -35,6 +35,12 @@ python -m roguelike.replay --agent random --seed 1000003 --run 0 --gif random.gi
 ```
 Plays a recorded human run, a saved PPO model, or the random agent on one map in the game window. `--gif FILE` also saves it as a GIF, and `--no-window` skips the window. For PPO models, yellow arrows show how likely each move is (thicker means more likely), and a box in the corner shows the chance of waiting or drinking. Add `--no-thinking` to hide them. Useful for the mistake analysis: replay an early checkpoint and a late one on the same seed and run.
 
+## Watching the agent learn
+```
+python -m roguelike.compare --seed 1000003 --run 0 --gif learning.gif --max-turns 40     --agents random checkpoints/ppo_step_50000.zip checkpoints/ppo_step_200000.zip checkpoints/ppo_final.zip     --labels "No training" "50k steps" "200k steps" "Final"
+```
+Makes one GIF with every agent side by side on the same map and the same enemy moves, so the only difference is how much each one has learned. Each panel shows the move arrows and ends with a banner (cleared, died, out of turns, or still going). Four agents make a 2 by 2 grid. `--max-turns` stops long runs early to keep the GIF short for slides.
+
 ## Game rules
 - 12x12 dungeon of rooms and corridors. Reach the stairs (`>`) to clear the floor.
 - Player has 10 HP. Moving into an enemy attacks it for 3 damage.
