@@ -27,6 +27,14 @@ Each finished run (win, death, or timeout) is saved to `demos/` as an `.npz` fil
 
 Human play only uses training maps. Seeds are split in `roguelike/seeds.py`: training maps are 0 to 9999, test maps start at 1,000,000.
 
+## Watching a run again
+```
+python -m roguelike.replay --demo demos/FILE.npz
+python -m roguelike.replay --model checkpoints/ppo_step_100000.zip --seed 1000003 --run 0
+python -m roguelike.replay --agent random --seed 1000003 --run 0 --gif random.gif --no-window
+```
+Plays a recorded human run, a saved PPO model, or the random agent on one map in the game window. `--gif FILE` also saves it as a GIF, and `--no-window` skips the window. Useful for the mistake analysis: replay an early checkpoint and a late one on the same seed and run.
+
 ## Game rules
 - 12x12 dungeon of rooms and corridors. Reach the stairs (`>`) to clear the floor.
 - Player has 10 HP. Moving into an enemy attacks it for 3 damage.

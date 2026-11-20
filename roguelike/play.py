@@ -154,7 +154,7 @@ def draw_status(screen, small, images, game, recording, top):
         x += text.get_width()
 
 
-def draw(screen, fonts, game, message, recording=None, images=None):
+def draw(screen, fonts, game, message, recording=None, images=None, help_text=HELP):
     """draw the map, the player, enemies, potions, and the status text"""
     big, small = fonts
     images = images or {"shade": make_shade()}
@@ -171,7 +171,7 @@ def draw(screen, fonts, game, message, recording=None, images=None):
 
     top = game.height * TILE + 6
     draw_status(screen, small, images, game, recording, top)
-    for line, text in enumerate((message or "", HELP), start=1):
+    for line, text in enumerate((message or "", help_text), start=1):
         screen.blit(small.render(text, True, COLORS["text"]), (8, top + line * 22))
 
 
