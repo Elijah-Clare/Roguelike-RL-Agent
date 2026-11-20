@@ -79,3 +79,12 @@ def test_timeout_is_truncation():
     for _ in range(5):
         _, _, terminated, truncated, _ = env.step(WAIT)
     assert truncated and not terminated
+
+
+def test_default_run_has_several_floors():
+    """a run has NUM_FLOORS floors and the floor stat starts at the first one"""
+    from roguelike.env import NUM_FLOORS
+    env = RoguelikeEnv()
+    obs, _ = env.reset(seed=3)
+    assert NUM_FLOORS > 1 and env.game.num_floors == NUM_FLOORS
+    assert obs["stats"][1] == np.float32(1 / NUM_FLOORS)

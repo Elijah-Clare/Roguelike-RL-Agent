@@ -11,7 +11,7 @@ import pygame
 
 from .demos import Recorder
 from .dungeon import STAIRS, WALL
-from .env import RoguelikeEnv
+from .env import NUM_FLOORS, RoguelikeEnv
 from .game import DOWN, DRINK, LEFT, RIGHT, UP, WAIT
 from .seeds import TRAIN_SEEDS
 
@@ -193,7 +193,7 @@ def main():
     """play runs until the window is closed"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, help="play one specific training map")
-    parser.add_argument("--floors", type=int, default=1)
+    parser.add_argument("--floors", type=int, default=NUM_FLOORS)
     parser.add_argument("--record", action="store_true", help="save each finished run to demos/")
     parser.add_argument("--name", default="player", help="your name, used in the saved file names")
     args = parser.parse_args()

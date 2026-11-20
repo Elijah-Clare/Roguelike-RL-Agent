@@ -13,7 +13,7 @@ def record_run(folder, seed, run, steps=25):
     """play random actions on one map and save the recording"""
     env = RoguelikeEnv()
     obs, _ = env.reset(seed=seed, options={"run": run})
-    recorder = Recorder("tester", seed, run, num_floors=1)
+    recorder = Recorder("tester", seed, run, num_floors=env.num_floors)
     rng = np.random.default_rng(seed)
     for _ in range(steps):
         action = int(rng.integers(6))

@@ -14,7 +14,7 @@ from itertools import chain
 
 import numpy as np
 
-from .env import RoguelikeEnv
+from .env import NUM_FLOORS, RoguelikeEnv
 from .game import DRINK, MOVES, NUM_ACTIONS, WAIT
 
 END_HOLD = 1.5               # seconds the last frame stays up in a GIF
@@ -32,7 +32,7 @@ def outcome(game):
     return "ran out of turns"
 
 
-def run_policy(policy, seed, run, num_floors=1):
+def run_policy(policy, seed, run, num_floors=NUM_FLOORS):
     """play one run where policy(obs) returns (action, probs). returns actions, probs, and how it ended"""
     env = RoguelikeEnv(num_floors=num_floors)
     obs, _ = env.reset(seed=seed, options={"run": run})
@@ -45,7 +45,7 @@ def run_policy(policy, seed, run, num_floors=1):
     return actions, probs, outcome(env.game)
 
 
-def replay_states(seed, run, actions, num_floors=1):
+def replay_states(seed, run, actions, num_floors=NUM_FLOORS):
     """the game after each action, starting before the first one. yields (game, events)"""
     env = RoguelikeEnv(num_floors=num_floors)
     env.reset(seed=seed, options={"run": run})
@@ -149,7 +149,7 @@ class TurnDrawer:
         return Image.frombytes("RGB", self.screen.get_size(), pygame.image.tobytes(self.screen, "RGB"))
 
 
-def run_frames(seed, run, actions, label, probs=None, num_floors=1):
+def run_frames(seed, run, actions, label, probs=None, num_floors=NUM_FLOORS):
     """every turn of a run as PIL images, without opening a window"""
     states = replay_states(seed, run, actions, num_floors)
     game, events = next(states)
@@ -175,7 +175,7 @@ def save_gif(frames, path, fps):
                    optimize=True)
 
 
-def show_run(seed, run, actions, label, num_floors=1, probs=None, fps=6):
+def show_run(seed, run, actions, label, num_floors=NUM_FLOORS, probs=None, fps=6):
     """play a run back in the game window, turn by turn"""
     import pygame
 
@@ -211,7 +211,7 @@ def main():
     source.add_argument("--agent", choices=["random"], help="built in agent")
     parser.add_argument("--seed", type=int, help="map seed (needed with --model or --agent)")
     parser.add_argument("--run", type=int, default=0, help="enemy moves for this run")
-    parser.add_argument("--floors", type=int, default=1)
+    parser.add_argument("--floors", type=int, default=NUM_FLOORS)
     parser.add_argument("--gif", help="save the run as a GIF here")
     parser.add_argument("--no-window", action="store_true", help="only save the GIF")
     parser.add_argument("--no-thinking", action="store_true", help="hide the PPO move arrows")

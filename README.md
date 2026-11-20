@@ -42,7 +42,8 @@ python -m roguelike.compare --seed 1000003 --run 0 --gif learning.gif --max-turn
 Makes one GIF with every agent side by side on the same map and the same enemy moves, so the only difference is how much each one has learned. Each panel shows the move arrows and ends with a banner (cleared, died, out of turns, or still going). Four agents make a 2 by 2 grid. `--max-turns` stops long runs early to keep the GIF short for slides.
 
 ## Game rules
-- 12x12 dungeon of rooms and corridors. Reach the stairs (`>`) to clear the floor.
+- 12x12 dungeon of rooms and corridors. Reach the stairs (`>`) to go down a floor.
+- A run is 5 floors (`NUM_FLOORS` in `roguelike/env.py`). Clear all 5 to win. HP and potions carry over between floors, so damage adds up.
 - Player has 10 HP. Moving into an enemy attacks it for 3 damage.
 - Enemies (1 to 3 per floor, they do not respawn):
   - rat `r`: 3 HP, hits for 1, chases when within 4 steps
@@ -50,7 +51,7 @@ Makes one GIF with every agent side by side on the same map and the same enemy m
   - next to the player they always attack. When chasing, they move randomly 20% of the time. Otherwise they wander.
 - Potions `!` (1 or 2 per floor): walk over one to pick it up (carry up to 3). Drinking heals 5 HP, capped at max HP.
 - Turn order: the player acts, then each enemy acts.
-- Turn limit: 200 turns per floor.
+- Turn limit: 200 turns per floor (the count resets on each new floor).
 
 ## Using the environment
 ```python

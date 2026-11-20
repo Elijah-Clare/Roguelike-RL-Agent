@@ -11,6 +11,7 @@ from .dungeon import STAIRS, WALL
 from .game import MAX_POTIONS, NUM_ACTIONS, Game
 
 VIEW_SIZE = 11
+NUM_FLOORS = 5  # floors per run (1 floor was too easy: the scripted bot won 97.8%)
 
 # channels of the view, in order
 WALL_CH, STAIRS_CH, VISITED_CH, ENEMY_CH, POTION_CH = range(5)
@@ -26,7 +27,7 @@ class RoguelikeEnv(gym.Env):
     """the roguelike as a gymnasium environment"""
     metadata = {"render_modes": ["ansi"]}
 
-    def __init__(self, num_floors=1, turns_per_floor=200, seed_pool=None, reward_fn=outcome_reward,
+    def __init__(self, num_floors=NUM_FLOORS, turns_per_floor=200, seed_pool=None, reward_fn=outcome_reward,
                  render_mode=None, **game_kwargs):
         """seed_pool limits which maps reset() picks from (e.g. only training seeds)"""
         self.num_floors = num_floors

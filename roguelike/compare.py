@@ -13,6 +13,7 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont
 
+from .env import NUM_FLOORS
 from .replay import model_policy, random_policy, run_frames, run_policy
 
 HEADER = 34  # pixels for the label above each panel
@@ -57,7 +58,7 @@ def add_header(frame, label):
     return out
 
 
-def compare_frames(seed, run, specs, labels, num_floors=1, thinking=True, scale=0.6, columns=None,
+def compare_frames(seed, run, specs, labels, num_floors=NUM_FLOORS, thinking=True, scale=0.6, columns=None,
                    max_turns=None):
     """one combined frame per turn with every agent side by side. also returns each result"""
     panels, results = [], []
@@ -99,7 +100,7 @@ def main():
     parser.add_argument("--agents", nargs="+", required=True, help='"random" or saved model paths')
     parser.add_argument("--labels", nargs="+", help="one label per agent")
     parser.add_argument("--gif", required=True)
-    parser.add_argument("--floors", type=int, default=1)
+    parser.add_argument("--floors", type=int, default=NUM_FLOORS)
     parser.add_argument("--columns", type=int, help="panels per row (default 2 for four agents)")
     parser.add_argument("--scale", type=float, default=0.6, help="size of each panel")
     parser.add_argument("--fps", type=int, default=6)
