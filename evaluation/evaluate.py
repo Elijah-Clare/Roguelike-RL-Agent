@@ -11,8 +11,9 @@ from agents.scripted_bot import ScriptedBot
 from agents.ppo_agent import PPOAgent
 from roguelike.env import RoguelikeEnv
 from roguelike.seeds import TEST_SEED_START
+from roguelike.reward import outcome_reward
 
-def evaluate(agent, num_seeds=100, runs_per_seed=5, reward_fn=None):
+def evaluate(agent, num_seeds=100, runs_per_seed=5, reward_fn=outcome_reward):
     """
     Runs a series of test games to see how well the agent performs. 
     It plays multiple games across different starting seeds and tracks the results.
