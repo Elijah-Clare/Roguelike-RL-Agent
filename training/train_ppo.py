@@ -24,7 +24,9 @@ class DecayAndEvalCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         progress = self.num_timesteps / self.total_timesteps
-        self.training_env.env_method("set_reward_progress", progress) if False else None
+        # Each env copy has its own reward, so send progress to all of them every 1000 calls
+        if self.n_calls % 1000 == 0:
+            self.training_env.env_method("set_reward_progress", progress)
         if self.num_timesteps >= self._next_save:
             self.model.save(f"checkpoints/{self.prefix}_step_{self.num_timesteps}")
             self._next_save += self.eval_freq

@@ -88,3 +88,19 @@ def test_default_run_has_several_floors():
     obs, _ = env.reset(seed=3)
     assert NUM_FLOORS > 1 and env.game.num_floors == NUM_FLOORS
     assert obs["stats"][1] == np.float32(1 / NUM_FLOORS)
+
+
+def test_reward_progress_reaches_every_env_copy():
+    """training progress gets to the reward inside each vectorized env copy"""
+    from stable_baselines3.common.env_util import make_vec_env
+    from roguelike.reward import ShapedReward
+    env = make_vec_env(lambda: RoguelikeEnv(reward_fn=ShapedReward()), n_envs=2)
+    env.env_method("set_reward_progress", 0.5)
+    weights = [reward.explore_weight for reward in env.get_attr("reward_fn")]
+    assert weights == [0.025, 0.025]
+
+
+def test_reward_progress_ignored_by_plain_rewards():
+    """rewards without a decay schedule just ignore progress"""
+    env = RoguelikeEnv()
+    env.set_reward_progress(0.5)

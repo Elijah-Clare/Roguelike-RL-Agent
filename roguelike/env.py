@@ -109,6 +109,11 @@ class RoguelikeEnv(gym.Env):
                           game.potions / MAX_POTIONS], np.float32)
         return {"view": view, "stats": stats}
 
+    def set_reward_progress(self, progress):
+        """tell the reward how far training is (0 to 1) so it can lower the exploration bonus"""
+        if hasattr(self.reward_fn, "set_progress"):
+            self.reward_fn.set_progress(progress)
+
     def render(self):
         """text picture of the map when render_mode is "ansi" """
         if self.render_mode == "ansi":
