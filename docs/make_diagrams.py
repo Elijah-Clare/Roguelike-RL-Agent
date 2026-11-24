@@ -45,15 +45,15 @@ def game_loop():
     ax.set_ylim(0, 8.2)
     ax.axis("off")
 
-    x, w, h = 2.7, 3.6, 0.62
+    x, w, h = 2.7, 3.9, 0.62
     steps = [
         (7.6, "Start a run\n(map seed + run number)", GRAY),
         (6.6, "Agent observes\n11x11 view + HP, floor, turns, potions", BLUE),
         (5.6, "Policy picks an action\n(move/attack, wait, or drink)", BLUE),
-        (4.6, "Game applies the player's action", GREEN),
+        (4.6, "Game applies the player's action\n(stairs: next floor, HP and potions kept)", GREEN),
         (3.6, "Each enemy takes its turn\n(attack, chase, or wander)", GREEN),
         (2.6, "Reward from this turn's events", YELLOW),
-        (1.5, "Run over?\n(won, died, or turn limit)", GRAY),
+        (1.5, "Run over?\n(cleared floor 5, died, or 200-turn limit)", GRAY),
     ]
     for y, text, color in steps:
         box(ax, x, y, w, h, text, color)
@@ -71,7 +71,7 @@ def game_loop():
             style="italic")
 
     # where learning happens
-    box(ax, 5.9, 4.1, 1.85, 1.5, "PPO update\nafter every 2,048\nturns collected", YELLOW, bold=True)
+    box(ax, 6.0, 4.1, 1.85, 1.5, "PPO update\nafter every 8,192\nturns collected\n(4 envs x 2,048)", YELLOW, bold=True)
     arrow(ax, (x + w / 2, 2.6), (5.9, 4.1 - 0.75), curve=0.25)
     arrow(ax, (5.9, 4.1 + 0.75), (x + w / 2, 5.6), curve=0.25)
     ax.text(6.15, 2.75, "rewards", fontsize=9, style="italic")
@@ -90,13 +90,13 @@ def workflow():
 
     stages = [
         (1.0, "1. Game", GREEN,
-         "Seeded dungeon\ngenerator\n\nRules: enemies,\npotions, stairs,\nturn limit\n\nGymnasium env\n(11x11 view)"),
+         "Seeded dungeon\ngenerator\n\n5 floors per run,\nenemies, potions,\n200-turn limit\n\nGymnasium env\n(11x11 view)"),
         (3.0, "2. Data", GRAY,
-         "Training maps:\nseeds 0-9,999\n\nTest maps:\nseeds 1,000,000+\n\n101 human runs\nx8 by rotate/flip"),
+         "Training maps:\nseeds 0-9,999\n\nTest maps:\nseeds 1,000,000+\n\n141 human runs\nx8 by rotate/flip"),
         (5.0, "3. Agents", BLUE,
          "Random\n\nScripted bot\n\nImitation\n(copies human runs)\n\nPPO (sparse and\nshaped reward)"),
         (7.0, "4. Training", YELLOW,
-         "Stable-Baselines3\nPPO\n\nreward.py with\nexplore decay\n\nCheckpoints\nduring training"),
+         "Stable-Baselines3\nPPO, 4 envs\n\nShaped reward:\nexplore bonus\ndecays to 0\n\nCheckpoints\nevery 50k steps"),
         (9.0, "5. Evaluation", GRAY,
          "100 test maps\nx 5 runs each\n\nWin rate, floors,\nturns, damage\n\nLearning curves\nand replays"),
     ]
@@ -106,7 +106,7 @@ def workflow():
     for (x1, *_), (x2, *_) in zip(stages, stages[1:]):
         arrow(ax, (x1 + 0.875, 4.45), (x2 - 0.875, 4.45))
 
-    ax.text(5.0, 0.75, "Tools: Python, Gymnasium, pygame, Stable-Baselines3 (PyTorch), NumPy, Matplotlib, pytest",
+    ax.text(5.0, 0.75, "Tools: Python, Gymnasium, pygame-ce, Stable-Baselines3 (PyTorch), NumPy, Matplotlib, pytest",
             ha="center", fontsize=9.5)
     ax.set_title("Project workflow", fontsize=13, weight="bold")
     return fig
